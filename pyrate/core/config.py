@@ -293,6 +293,9 @@ DEFAULT_TO_OBS_DIR = [SLC_DIR, COH_FILE_DIR]
 
 INT_KEYS = [APS_CORRECTION, APS_METHOD]
 
+# some filenames reused in  many parts of the program
+REF_PIXEL_FILE = 'ref_pixel.npy'
+
 
 def get_config_params(path: str) -> Dict:
     """

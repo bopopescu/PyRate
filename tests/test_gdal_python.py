@@ -28,7 +28,6 @@ from pyrate.core import gdal_python
 from tests import common
 
 
-
 class TestCrop(unittest.TestCase):
     def test_small_data_cropping(self):
         small_test_ifgs = common.small_data_setup()

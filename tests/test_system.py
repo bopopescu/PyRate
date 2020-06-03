@@ -19,6 +19,7 @@
 pyrate basic workflow for all supported input datasets
 
 """
+import numpy as np
 import pytest
 from subprocess import check_call
 from pathlib import Path
@@ -52,3 +53,9 @@ def test_single_workflow(gamma_conf):
     log_file_name = 'pyrate.log.' + 'workflow'
     files = list(Path(params[cf.OUT_DIR]).glob(log_file_name + '.*'))
     assert len(files) == 1
+
+    # ref pixel file generated
+    ref_pixel_file = Path(params[cf.OUT_DIR]).joinpath(cf.REF_PIXEL_FILE)
+    assert ref_pixel_file.exists()
+    ref_pixel = np.load(ref_pixel_file)
+    np.testing.assert_array_equal(ref_pixel, [38, 58])

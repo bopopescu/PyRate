@@ -19,6 +19,7 @@ This Python module runs the main PyRate processing workflow
 """
 import os
 from os.path import join
+from pathlib import Path
 import pickle as cp
 from collections import OrderedDict
 from typing import List
@@ -130,7 +131,16 @@ def _ref_pixel_calc(ifg_paths, params):
     ifg = Ifg(ifg_paths[0])
     ifg.open(readonly=True)
 
+    ref_pixel_file = Path(params[cf.OUT_DIR]).joinpath(cf.REF_PIXEL_FILE)
+
     if refx == -1 or refy == -1:
+        if ref_pixel_file.exists():
+            # read and return
+            refx, refy = np.load(ref_pixel_file)
+            log.info('Reusing pre-calculated ref-pixel values: ({}, {}) from file {}'.format(
+                refx, refy, ref_pixel_file.as_posix()))
+            log.warn("Reusing pre-calculated ref-pixel values!!!")
+            return refx, refy
 
         log.info('Searching for best reference pixel location')
 
@@ -152,6 +162,9 @@ def _ref_pixel_calc(ifg_paths, params):
                 "continuing.")
 
         refy, refx = refpixel_returned
+
+        # dump to disc
+        np.save(file=ref_pixel_file, arr=[int(refx), int(refy)])
 
         log.info('Selected reference pixel coordinate: ({}, {})'.format(refx, refy))
     else:
