@@ -128,9 +128,6 @@ def _ref_pixel_calc(ifg_paths, params):
     refx = params[cf.REFX]
     refy = params[cf.REFY]
 
-    ifg = Ifg(ifg_paths[0])
-    ifg.open(readonly=True)
-
     ref_pixel_file = Path(params[cf.OUT_DIR]).joinpath(cf.REF_PIXEL_FILE)
 
     if refx == -1 or refy == -1:
@@ -170,7 +167,6 @@ def _ref_pixel_calc(ifg_paths, params):
     else:
         log.info('Reusing reference pixel from config file: ({}, {})'.format(refx, refy))
     log.debug("refpx, refpy: "+str(refx) + " " + str(refy))
-    ifg.close()
     return int(refx), int(refy)
 
 
