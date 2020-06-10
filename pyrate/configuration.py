@@ -23,6 +23,7 @@ from pyrate.constants import NO_OF_PARALLEL_PROCESSES
 from pyrate.default_parameters import PYRATE_DEFAULT_CONFIGURATION
 from pyrate.core.algorithm import factorise_integer
 from pyrate.core.shared import extract_epochs_from_filename, InputTypes
+from pyrate.core import config as cf
 from pyrate.core.config import parse_namelist, ConfigException
 
 
@@ -115,8 +116,9 @@ class Configuration:
         for key, value in parser._sections["root"].items():
             self.__dict__[key] = value
 
-        # make output path, if not provided will error
+        # make output paths, if not provided will error
         Path(self.outdir).mkdir(exist_ok=True, parents=True)
+        Path(self.outdir, cf.ORB_ERROR_DIR).mkdir(exist_ok=True, parents=True)
 
         # Validate required parameters exist.
 

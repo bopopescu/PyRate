@@ -189,6 +189,12 @@ def independent_orbital_correction(ifg, degree, offset, params):
     :return: None - interferogram phase data is updated and saved to disk
     """
     ifg = shared.Ifg(ifg) if isinstance(ifg, str) else ifg
+    orbfit_on_disc = Path(params[cf.OUT_DIR], cf.ORB_ERROR_DIR,
+                          Path(ifg.data_path).with_suffix('.orbfit.npy').name)
+    if orbfit_on_disc.exists():
+        log.info(f'Reusing already computed orbital fit correction for {ifg.data_path}')
+        return
+
     if not ifg.is_open:
         ifg.open()
     shared.nan_and_mm_convert(ifg, params)
@@ -208,12 +214,29 @@ def independent_orbital_correction(ifg, degree, offset, params):
     else:
         fullorb = np.reshape(np.dot(dm, model), ifg.phase_data.shape)
     offset_removal = nanmedian(np.ravel(ifg.phase_data - fullorb))
-    # subtract orbital error from the ifg
-    ifg.phase_data -= (fullorb - offset_removal)
-    # set orbfit meta tag and save phase to file
-    _save_orbital_error_corrected_phase(ifg)
-    if ifg.open():
-        ifg.close()
+
+    orbfit_correction = fullorb - offset_removal
+
+    # dump to disc
+    np.save(file=orbfit_on_disc, arr=orbfit_correction)
+
+    # # subtract orbital error from the ifg
+    # ifg.phase_data -= orbfit_correction
+    # # set orbfit meta tag and save phase to file
+    # _save_orbital_error_corrected_phase(ifg)
+    # if ifg.open():
+    #     ifg.close()
+
+
+def __check_network_orbital_correction_status(ifgs, params):
+    orbfits_on_disc = [Path(params[cf.OUT_DIR], cf.ORB_ERROR_DIR, Path(ifg).with_suffix('.orbfit.npy').name)
+                       for ifg in ifgs]
+
+    if all([orb.exists() for orb in orbfits_on_disc]):
+        log.info(f'Reusing already computed orbital fit correction!')
+        return True
+
+    return False
 
 
 def network_orbital_correction(ifgs, degree, offset, params, m_ifgs: Optional[List] = None,
@@ -237,6 +260,9 @@ def network_orbital_correction(ifgs, degree, offset, params, m_ifgs: Optional[Li
     :return: None - interferogram phase data is updated and saved to disk
     """
     # pylint: disable=too-many-locals, too-many-arguments
+
+    if __check_network_orbital_correction_status(ifgs, params):
+        return
     src_ifgs = ifgs if m_ifgs is None else m_ifgs
     src_ifgs = mst.mst_from_ifgs(src_ifgs)[3]  # use networkx mst
 
