@@ -388,6 +388,11 @@ def _timeseries_calc(params):
         # optional save of tsincr npy tiles
         if params["savetsincr"] == 1:
             np.save(file=os.path.join(output_dir, 'tsincr_{}.npy'.format(t.index)), arr=tsincr)
+        linrate, r_squared, std_err, samples = timeseries.linear_rate_array(tscuml, ifg_parts, params)
+        np.save(file=os.path.join(output_dir, 'linear_rate_{}.npy'.format(t.index)), arr=linrate)
+        np.save(file=os.path.join(output_dir, 'linear_rsquared_{}.npy'.format(t.index)), arr=r_squared)
+        np.save(file=os.path.join(output_dir, 'linear_error_{}.npy'.format(t.index)), arr=std_err)
+        np.save(file=os.path.join(output_dir, 'linear_samples_{}.npy'.format(t.index)), arr=samples)
     mpiops.comm.barrier()
     log.debug("Finished timeseries calc!")
 
